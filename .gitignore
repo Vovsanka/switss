@@ -1,0 +1,9 @@
+__pycache__/
+.ipynb_checkpoints/
+.vscode/
+docs/build/
+build/
+dist/
+switss.egg-info/
+*.c
+*.log
