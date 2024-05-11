@@ -35,6 +35,19 @@ def quotient(G,partition):
 
     return quotientGraph,labeling,interface
 
+def mec_quotient(G,components,mec_counter):
+    component_members = {}
+    for vertex, component in enumerate(components):
+        if component not in component_members:
+            component_members[component] = []
+        component_members[component].append(vertex)
+
+    partition = [component_members[mec_component] for mec_component in range(mec_counter)]
+
+    quotientGraph,_,_ = quotient(G, partition)
+
+    return quotientGraph,component_members
+
 def interface(node_set1,node_set2,P):
     M = len(node_set1)
     N = len(node_set2)
