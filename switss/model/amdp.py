@@ -198,14 +198,32 @@ class AbstractMDP(ABC):
         """        
         return self.__graph.maximal_end_components()
 
+    def get_system_matrix(self):
+        A = np.zeros(shape=self.P.shape)
+        for code in range(self.P.shape[0]):
+            u_state, action = self.index_by_state_action.inv[code]
+            for v_state in range(self.P.shape[1]):
+                if u_state == v_state:
+                    A[(code, v_state)] = 1 - self.P[(code, v_state)]
+                else:
+                    A[(code, v_state)] = -self.P[(code, v_state)]
+        return A
+
     def mec_quotient_mdp(self, components, proper_mecs, mec_counter):
         from .mdp import MDP
 
+        # u_state = from_state, v_state = to_state
         q_index_by_state_action = bidict()
         q_code_counter = 0
-        for code, (u_state, action) in self.index_by_state_action.inv.items():
-            q_index_by_state_action[(components[u_state], code)] = q_code_counter
-            q_code_counter += 1
+        for code in range(self.P.shape[0]):
+            u_state, action = self.index_by_state_action.inv[code]
+            inner_action_possibility = 0
+            for v_state in range(self.P.shape[1]):
+                if components[u_state] == components[v_state]:
+                    inner_action_possibility += self.P[(code, v_state)]
+            if inner_action_possibility < 1:
+                q_index_by_state_action[(components[u_state], code)] = q_code_counter
+                q_code_counter += 1
         # add tau action for proper mecs
         q_tau_action = len(list(self.index_by_state_action.inv.keys()))
         for mec_comp in range(mec_counter):
@@ -220,7 +238,8 @@ class AbstractMDP(ABC):
                 probability = self.P[(code, v_state)]
                 if probability == 0:
                     continue
-                q_P[(q_index_by_state_action[(components[u_state], code)], components[v_state])] += probability
+                if (components[u_state], code) in q_index_by_state_action: # ignore in-component actions
+                    q_P[(q_index_by_state_action[(components[u_state], code)], components[v_state])] += probability
         # set tau_action probability to exit state to 1
         for mec_comp in range(mec_counter):
             if (proper_mecs[mec_comp]):
