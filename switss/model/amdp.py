@@ -209,7 +209,7 @@ class AbstractMDP(ABC):
                     A[(code, v_state)] = -self.P[(code, v_state)]
         return A
 
-    def mec_quotient_mdp(self, mecs, precision=1e-9):
+    def mec_quotient_mdp(self, mecs, tol=1e-6):
         from .mdp import MDP
 
         components, proper_mecs, mec_counter = mecs
@@ -223,7 +223,7 @@ class AbstractMDP(ABC):
             for v_state in range(self.P.shape[1]):
                 if components[u_state] == components[v_state]:
                     inner_action_possibility += self.P[(code, v_state)]
-            if not (abs(1 - inner_action_possibility) < precision): # not equals 1
+            if not (abs(1 - inner_action_possibility) <= tol): # not equals 1
                 q_index_by_state_action[(components[u_state], code)] = q_code_counter
                 q_code_counter += 1
         # add tau action for proper mecs
