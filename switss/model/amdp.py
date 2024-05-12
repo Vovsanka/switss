@@ -198,6 +198,36 @@ class AbstractMDP(ABC):
         """        
         return self.__graph.maximal_end_components()
 
+    def mec_quotient_mdp(self, components, proper_mecs, mec_counter):
+        from .mdp import MDP
+
+        q_index_by_state_action = bidict()
+        q_code_counter = 0
+        for code, (u_state, action) in self.index_by_state_action.inv.items():
+            q_index_by_state_action[(components[u_state], code)] = q_code_counter
+            q_code_counter += 1
+        # add tau action for proper mecs
+        q_tau_action = len(list(self.index_by_state_action.inv.keys()))
+        for mec_comp in range(mec_counter):
+            if (proper_mecs[mec_comp]):
+                q_index_by_state_action[(mec_comp, q_tau_action)] = q_code_counter
+                q_code_counter += 1 
+
+        q_P = np.zeros(shape=(q_code_counter, mec_counter + 1))  # add exit state (mec_counter)
+        for code in range(self.P.shape[0]):
+            u_state, action = self.index_by_state_action.inv[code]
+            for v_state in range(self.P.shape[1]):
+                probability = self.P[(code, v_state)]
+                if probability == 0:
+                    continue
+                q_P[(q_index_by_state_action[(components[u_state], code)], components[v_state])] += probability
+        # set tau_action probability to exit state to 1
+        for mec_comp in range(mec_counter):
+            if (proper_mecs[mec_comp]):
+                q_P[(q_index_by_state_action[(mec_comp, q_tau_action)], mec_counter)] = 1
+            
+        return MDP(q_P, q_index_by_state_action)
+
     @classmethod
     def from_file(cls, label_file_path, tra_file_path):
         """Computes an instance of this model from a given .lab and .tra file.
