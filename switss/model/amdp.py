@@ -221,7 +221,7 @@ class AbstractMDP(ABC):
             for v_state in range(self.P.shape[1]):
                 if components[u_state] == components[v_state]:
                     inner_action_possibility += self.P[(code, v_state)]
-            if inner_action_possibility < 1:
+            if not (abs(1 - inner_action_possibility) < 1e-9): # not equals 1
                 q_index_by_state_action[(components[u_state], code)] = q_code_counter
                 q_code_counter += 1
         # add tau action for proper mecs
