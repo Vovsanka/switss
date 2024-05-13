@@ -8,7 +8,7 @@ from collections import deque
 def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
     """
     """
-    mec_quotient_ec_free_cert, _ = mec_certificate
+    mec_quotient_ec_free_cert, mec_strongly_connected_cert = mec_certificate
     
     ### check the certificate for mec quotient ec-freeness
     # get mec quotient mdp
@@ -23,6 +23,28 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
             return False
 
     ### check the certificate for mec being strongly connected
+    vertex_count = amdp.P.shape[1]
+    # retrieve fwd and bwd from certificate
+    fwd, bwd = mec_strongly_connected_cert
+    # the fwd and the bwd constraints fulfiled by vertex
+    fwd_ok = np.zeros(vertex_count, dtype=bool)
+    bwd_ok = np.zeros(vertex_count, dtype=bool)
+    # check each inner action
+    components,_,mec_counter = mecs
+    for code, v_state in list(amdp.P.keys()):
+        u_state, action = amdp.index_by_state_action.inv[code]
+        if components[u_state] == components[v_state]:
+            # check if the inner action fulfils fwd and/or bwd constraint
+            if fwd[v_state] < fwd[u_state]:
+                fwd_ok[u_state] = True
+            if bwd[u_state] < bwd[v_state]:
+                bwd_ok[v_state] = True
+    # all elements except of component leaders (bwd[u] = fwd[u] = 0) must be True
+    if not np.all(fwd_ok == bwd_ok):  
+        return False
+    # the amount of leaders must be equal to the amount of components
+    if (fwd_ok == False).sum() != mec_counter:
+        return False
 
     return True
 
