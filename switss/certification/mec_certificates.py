@@ -16,7 +16,10 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
     # get system matrix of the mec quotient mdp
     q_A = q_mdp.get_system_matrix()
     # multiply the system matrix with mec_quotient_ec_free_certificate
-    M = np.matmul(q_A, np.matrix(mec_quotient_ec_free_cert).transpose())
+    try:
+        M = np.matmul(q_A, np.matrix(mec_quotient_ec_free_cert).transpose())
+    except:
+        return False
     # check if the multiplication results fulfils >= 1 for each constraint
     for i in range(M.shape[0]):
         if M[(i, 0)] + tol < 1:
