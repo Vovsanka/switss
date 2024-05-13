@@ -216,7 +216,8 @@ class AbstractMDP(ABC):
         # u_state = from_state, v_state = to_state
         q_index_by_state_action = bidict()
         q_code_counter = 0
-        for code in range(self.P.shape[0]):
+        original_inner_action_codes = []
+        for code in range(self.P.shape[0]):  # optimize that: currently quadratic
             u_state, action = self.index_by_state_action.inv[code]
             inner_action_possibility = 0
             for v_state in range(self.P.shape[1]):
@@ -225,6 +226,8 @@ class AbstractMDP(ABC):
             if not (abs(1 - inner_action_possibility) <= tol): # not equals 1
                 q_index_by_state_action[(components[u_state], code)] = q_code_counter
                 q_code_counter += 1
+            else:
+                original_inner_action_codes.append(code)
         # add tau action for proper mecs
         q_tau_action = len(list(self.index_by_state_action.inv.keys()))
         for mec_comp in range(mec_counter):
@@ -243,7 +246,7 @@ class AbstractMDP(ABC):
             if (proper_mecs[mec_comp]):
                 q_P[(q_index_by_state_action[(mec_comp, q_tau_action)], mec_counter)] = 1
             
-        return MDP(q_P, q_index_by_state_action)
+        return (MDP(q_P, q_index_by_state_action), original_inner_action_codes)
 
     @classmethod
     def from_file(cls, label_file_path, tra_file_path):

@@ -10,7 +10,7 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
     mec_quotient_ec_free_cert, _ = mec_certificate
 
     # get mec quotient mdp
-    q_mdp = amdp.mec_quotient_mdp(mecs)
+    q_mdp, original_inner_action_codes = amdp.mec_quotient_mdp(mecs)
     # get system matrix of the mec quotient mdp
     q_A = q_mdp.get_system_matrix()
     # multiply the system matrix with mec_quotient_ec_free_certificate
@@ -28,7 +28,7 @@ def generate_mec_certificate(amdp : AbstractMDP, mecs, certificate_bounds=1e9):
     """
     """
     # get mec quotient mdp
-    q_mdp = amdp.mec_quotient_mdp(mecs)
+    q_mdp, original_inner_action_codes = amdp.mec_quotient_mdp(mecs)
     # get system matrix of the mec quotient mdp
     q_A = q_mdp.get_system_matrix()
     # constraints count and variables count in the system matrix   
