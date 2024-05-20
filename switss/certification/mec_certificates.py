@@ -40,13 +40,13 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
     # check each inner action
     components,_,mec_counter = mecs
     for code, v_state in list(amdp.P.keys()):
+        if code not in original_inner_action_codes:
+            continue
         u_state, action = amdp.index_by_state_action.inv[code]
-        if components[u_state] == components[v_state]:
-            # check if the inner action fulfils fwd and/or bwd constraint
-            if fwd[v_state] < fwd[u_state]:
-                fwd_ok[u_state] = True
-            if bwd[u_state] < bwd[v_state]:
-                bwd_ok[v_state] = True
+        if fwd[v_state] < fwd[u_state]:
+            fwd_ok[u_state] = True
+        if bwd[u_state] < bwd[v_state]:
+            bwd_ok[v_state] = True
     # all elements except of component leaders (bwd[u] = fwd[u] = 0) must be True
     if not np.all(fwd_ok == bwd_ok):  
         return False
@@ -96,9 +96,8 @@ def generate_mec_certificate(amdp : AbstractMDP, mecs, certificate_bounds=1e9):
         if code not in original_inner_action_codes:
             continue
         u_state, action = amdp.index_by_state_action.inv[code]
-        if components[u_state] == components[v_state]:
-            adj[u_state].append(v_state)
-            rev_adj[v_state].append(u_state)
+        adj[u_state].append(v_state)
+        rev_adj[v_state].append(u_state)
     # init the certifying functions fwd, bwd
     fwd = np.zeros(vertex_count, dtype=int)
     bwd = np.zeros(vertex_count, dtype=int)
