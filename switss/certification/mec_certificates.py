@@ -31,9 +31,9 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
     fwd, bwd = mec_strongly_connected_cert
     # check fwd, bwd are functions: S -> N
     if fwd.shape[0] != vertex_count or bwd.shape[0] != vertex_count:
-        print("INVALID")
+        return False
     if not np.issubdtype(fwd.dtype, np.integer) or not np.issubdtype(bwd.dtype, np.integer):
-        print("INVALID")
+        return False
     # the fwd and the bwd constraints are fulfiled by vertex
     fwd_ok = np.zeros(vertex_count, dtype=bool)
     bwd_ok = np.zeros(vertex_count, dtype=bool)
