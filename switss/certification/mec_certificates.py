@@ -29,7 +29,12 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
     vertex_count = amdp.P.shape[1]
     # retrieve fwd and bwd from certificate
     fwd, bwd = mec_strongly_connected_cert
-    # the fwd and the bwd constraints fulfiled by vertex
+    # check fwd, bwd are functions: S -> N
+    if fwd.shape[0] != vertex_count or bwd.shape[0] != vertex_count:
+        print("INVALID")
+    if not np.issubdtype(fwd.dtype, np.integer) or not np.issubdtype(bwd.dtype, np.integer):
+        print("INVALID")
+    # the fwd and the bwd constraints are fulfiled by vertex
     fwd_ok = np.zeros(vertex_count, dtype=bool)
     bwd_ok = np.zeros(vertex_count, dtype=bool)
     # check each inner action
@@ -45,8 +50,12 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
     # all elements except of component leaders (bwd[u] = fwd[u] = 0) must be True
     if not np.all(fwd_ok == bwd_ok):  
         return False
-    # the amount of leaders must be equal to the amount of components
-    if (fwd_ok == False).sum() != mec_counter:
+    # check leaders-components bijection (each component has exactly one leader)
+    component_leaders = np.zeros(mec_counter, dtype=int)
+    for state,ok in enumerate(fwd_ok):
+        if not ok:  # then state is a leader
+            component_leaders[components[state]] += 1
+    if not (component_leaders == 1).all():
         return False
 
     return True
