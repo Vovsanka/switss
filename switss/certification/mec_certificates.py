@@ -6,7 +6,22 @@ from collections import deque
 
 
 def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
-    """
+    """Checks the MEC-decomposition certificate.
+
+        :param amdp: the original AMDP that is decomposed in MECs
+        :type amdp: AbstractMDP
+
+        :param mecs: the result of MEC-decomposition (see AbstractMDP.maximal_end_components())
+        :type mecs: Tuple[np.ndarry[int],np.ndarry[bool],int]
+
+        :param mec_certificate: the result of MEC-certificate generation (see generate_mec_certificate())
+        :type mec_certificate: Tuple[np.ndarry,Tuple[np.ndarry[int],np.ndarry[int]]]
+
+        :param tol: tollerance when comparing floating numbers
+        :type tol: float 
+        
+        :return: True if certificate is valid, False otherwise
+        :rtype: bool
     """
     mec_quotient_ec_free_cert, mec_strongly_connected_cert = mec_certificate
     
@@ -60,8 +75,17 @@ def check_mec_certificate(amdp : AbstractMDP, mecs, mec_certificate, tol=1e-6):
 
     return True
 
-def generate_mec_certificate(amdp : AbstractMDP, mecs, certificate_bounds=1e9):
-    """
+def generate_mec_certificate(amdp : AbstractMDP, mecs):
+    """Generates the MEC-decomposition certificate.
+
+        :param amdp: the original AMDP that is decomposed in MECs
+        :type amdp: AbstractMDP
+
+        :param mecs: the result of MEC-decomposition (see AbstractMDP.maximal_end_components())
+        :type mecs: Tuple[np.ndarry[int],np.ndarry[bool],int]
+        
+        :return: a complex certificate that consists of mec_quotient_ec_free_cert and mec_strongly_connected_cert
+        :rtype: Tuple[np.ndarry,Tuple[np.ndarry[int],np.ndarry[int]]]
     """
     ### generate the certificate for mec quotient ec-freeness
     # get mec quotient mdp
@@ -91,7 +115,6 @@ def generate_mec_certificate(amdp : AbstractMDP, mecs, certificate_bounds=1e9):
         rev_adj[u] = []
     # calculate the ajacency lists only from inner actions
     original_inner_action_codes = set(original_inner_action_codes)
-    components,_,_ = mecs
     for code, v_state in list(amdp.P.keys()):
         if code not in original_inner_action_codes:
             continue

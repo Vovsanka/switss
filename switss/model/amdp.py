@@ -199,6 +199,11 @@ class AbstractMDP(ABC):
         return self.__graph.maximal_end_components()
 
     def get_system_matrix(self):
+        """Retrieves system matrix from the transition matrix P.
+        
+        :return: system matrix
+        :rtype: 2d np.array
+        """
         A = np.zeros(shape=self.P.shape)
         for code in range(self.P.shape[0]):
             u_state, action = self.index_by_state_action.inv[code]
@@ -209,6 +214,14 @@ class AbstractMDP(ABC):
         return A
 
     def mec_quotient_mdp(self, mecs, tol=1e-6):
+        """Calculates the quotient MDP based on MEC-decomposition.
+
+        :param mecs: the result of MEC-decomposition (see AbstractMDP.maximal_end_components())
+        :type mecs: Tuple[np.ndarry[int],np.ndarry[bool],int]
+        
+        :return: quotient-MDP
+        :rtype: MDP
+        """
         from .mdp import MDP
 
         components, proper_mecs, mec_counter = mecs
