@@ -248,12 +248,16 @@ class AbstractMDP(ABC):
                 q_index_by_state_action[(mec_comp, q_tau_action)] = q_code_counter
                 q_code_counter += 1 
 
+
         q_P = np.zeros(shape=(q_code_counter, mec_counter + 1))  # add exit state (mec_counter)
         for code, v_state in list(self.P.keys()):
             u_state, action = self.index_by_state_action.inv[code]
             probability = self.P[(code, v_state)]
             if (components[u_state], code) in q_index_by_state_action: # ignore in-component actions
-                q_P[(q_index_by_state_action[(components[u_state], code)], components[v_state])] += probability
+                if components[u_state] != components[v_state]:  # ignore loops
+                    q_P[(q_index_by_state_action[(components[u_state], code)], components[v_state])] += probability
+                else:
+                    q_P[(q_index_by_state_action[(components[u_state], code)], mec_counter)] += probability
         # set tau_action probability to exit state to 1
         for mec_comp in range(mec_counter):
             if (proper_mecs[mec_comp]):
